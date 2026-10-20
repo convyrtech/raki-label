@@ -31,10 +31,11 @@ DATA = dict(
     name_full = "Раки узкопалые варёные, неразделанные, охлаждённые, в бульоне.",
     ready     = "Продукт готов к употреблению в охлаждённом или разогретом виде.",
     usage     = "Перед подачей разогреть бульон и залить им раков. В ведре и в микроволновой печи не разогревать.",
-    packdate  = "Упаковано в день изготовления. Претензии: rakomat@bk.ru",
+    packdate  = f"Упаковано в день изготовления. Претензии: rakomat@bk.ru,{NB}тел.{NB}+7{NB}966{NB}339-96-69",
     # --- ключевые сведения (кегль BIG_MM) ---
     netto     = f"Масса нетто 2200{NB}г, раков 930{NB}г",
     netto2    = f"Масса раков: 930{NB}г",
+    raw       = f"Изготовлено из 1{NB}кг живых раков",
     shelf     = f"Срок годности: 5{NB}суток",
     dates     = f"Изготовлено ___.___.___{NB}{NB}Годен до ___.___.___",
     dates_a   = f"Изготовлено 02.09.2026",
@@ -50,7 +51,7 @@ DATA = dict(
     size      = "Размер раков: ____________",
     maker     = "Изготовитель: ООО «Ракомат», Россия, Московская обл., "
                 "д. Осоргино, 202.",
-    claims    = f"По вопросам качества: rakomat@bk.ru",
+    claims    = f"По вопросам качества: rakomat@bk.ru, тел.{NB}8{NB}966{NB}339-96-69",
     # --- уплотнённые строки для варианта «всё на одной 58x40» ---
     nutrition_c = f"Пищевая ценность в 100{NB}г: белки 1,5{NB}г, жиры 0,1{NB}г, "
                   f"углеводы 0,1{NB}г, 5{NB}ккал (25{NB}кДж).",
@@ -59,11 +60,31 @@ DATA = dict(
     tu        = f"ТУ{NB}10.20.34-001-96717702-2026",
     decl      = f"Декларация о соответствии {NB.join('ЕАЭС N RU Д-RU.РА07.В.32767/26'.split())}",
 )
-BIG  = {"name_full", "netto", "shelf", "dates", "dates_a", "dates_b", "dates_blank"}
+
+# Фасовки: кг живых раков -> (масса нетто с бульоном, г; раков варёных, г).
+# Выход варёных раков 93% от живых (930 г из 1 кг — замер по базовой фасовке),
+# бульон масштабируется пропорционально. ЦИФРЫ 1,5/3/6 кг — РАСЧЁТНЫЕ,
+# перед печатью сверить с реальным взвешиванием.
+PACKS = {
+    "1":   (2200,   930),
+    "1.5": (3300,  1395),
+    "3":   (6600,  2790),
+    "6":   (13200, 5580),
+}
+
+def set_pack(kg):
+    """Подставить в DATA массы и строку о сырье для фасовки kg (строка: '1', '1.5', ...)."""
+    netto, meat = PACKS[kg]
+    human = kg.replace(".", ",")
+    DATA["netto"]  = f"Масса нетто {netto}{NB}г, раков {meat}{NB}г"
+    DATA["netto2"] = f"Масса раков: {meat}{NB}г"
+    DATA["raw"]    = f"Изготовлено из {human}{NB}кг живых раков"
+
+BIG  = {"name_full", "netto", "raw", "shelf", "dates", "dates_a", "dates_b", "dates_blank"}
 MID  = set()                        # масса идёт кеглем состава
 BUMP = {"sostav": 1.2, "usage": 1.2, "ready": 1.2}
 BOLD_OFF = {"name_full"}              # эти строки чуть крупнее прочего текста
-BOLD = {"allergen", "netto", "netto2", "storage", "storage_c", "shelf", "dates", "dates_a",
+BOLD = {"allergen", "netto", "raw", "netto2", "storage", "storage_c", "shelf", "dates", "dates_a",
         "dates_blank", "usage", "ready",
         "dates_b", "opened"}
 
@@ -84,14 +105,14 @@ PRESETS = {
                    body=["name_full","sostav","allergen","nutrition_c","netto",
                          "shelf","dates_a","storage_c","usage"],
                    foot=["packdate","maker","tu"], foot_mm=1.5),
-    "58x80-all": dict(w=58, h=80, m=1.8, logo=7, title_mm=4.2, title_pos="right", rule=False, eac_mm=6.0,
-                   body=["name_full","sostav","allergen","nutrition_c","netto",
+    "58x80-all": dict(w=58, h=80, m=1.8, mt=3.5, logo=7, logo_align="center", title_mm=0, rule=False, eac_mm=6.0,
+                   body=["name_full","sostav","allergen","nutrition_c","netto","raw",
                          "shelf","dates_a","storage_c","ready","usage"],
-                   foot=["packdate","maker","tu"], foot_mm=1.5),
-    "58x80-blank": dict(w=58, h=80, m=1.8, logo=7, title_mm=4.2, title_pos="right", rule=False, eac_mm=6.0,
-                   body=["name_full","sostav","allergen","nutrition_c","netto",
+                   foot=["packdate","maker","tu"], foot_mm=1.9),
+    "58x80-blank": dict(w=58, h=80, m=1.8, mt=3.5, logo=7, logo_align="center", title_mm=0, rule=False, eac_mm=6.0,
+                   body=["name_full","sostav","allergen","nutrition_c","netto","raw",
                          "shelf","dates_blank","storage_c","ready","usage"],
-                   foot=["packdate","maker","tu"], foot_mm=1.5),
+                   foot=["packdate","maker","tu"], foot_mm=1.9),
     "58x40-A": dict(w=58, h=40, m=1.4, logo=5, logo_align="center",
                    title_mm=0, rule=False, eac_mm=6.0, eac_pos="tr",
                    body=["name_full","netto","shelf","dates_a"],
@@ -121,9 +142,18 @@ PRESETS = {
                    foot=["decl"], foot_mm=1.5),
 }
 
+# --- 58x80 под каждую фасовку: 58x80-1.5kg, 58x80-3kg, 58x80-6kg, и blank-версии ---
+for _kg in PACKS:
+    for _base, _tag in (("58x80-all", ""), ("58x80-blank", "-blank")):
+        PRESETS[f"58x80-{_kg}kg{_tag}"] = dict(PRESETS[_base], pack=_kg)
+
+
 def build(key, out=None, quiet=False):
     p = PRESETS[key]
+    if p.get("pack"):
+        set_pack(p["pack"])
     W, H, M = px(p["w"]), px(p["h"]), px(p["m"])
+    MT = px(p.get("mt", p["m"]))   # верхнее поле: термоголовка подрезает самый край
     img = Image.new("L", (W, H), 255)
     d = ImageDraw.Draw(img)
 
@@ -142,7 +172,7 @@ def build(key, out=None, quiet=False):
     eac = px(p.get("eac_mm", 6.0 if p["w"] < 70 else 8.0))
 
     # --- шапка ---
-    y0, lw, lh = M, 0, 0
+    y0, lw, lh = MT, 0, 0
     if p["logo"]:
         logo = Image.open("logo.png").convert("L")
         lh = px(p["logo"]); lw = int(logo.width * lh / logo.height)
@@ -152,8 +182,8 @@ def build(key, out=None, quiet=False):
         if lw > cap:
             lw, lh = cap, int(logo.height * cap / logo.width)
         lx = M + (W - 2*M - lw) // 2 if p.get("logo_align") == "center" else M
-        img.paste(logo.resize((lw, lh), Image.LANCZOS), (lx, M))
-        y0 = M + lh + px(1.0)
+        img.paste(logo.resize((lw, lh), Image.LANCZOS), (lx, MT))
+        y0 = MT + lh + px(1.0)
 
     # заголовок: кегль не ниже TITLE_MM, ужимается только если иначе не влезает
     tsize = p.get("title_mm", TITLE_MM)
@@ -166,7 +196,7 @@ def build(key, out=None, quiet=False):
         while tsize > 2.0 and d.textlength(title, font=font(tsize, True)) > rcap:
             tsize -= 0.1
         ft = font(tsize, True)
-        d.text((tx, M + (lh - int(ft.size * 1.02)) // 2), title, font=ft, fill=0)
+        d.text((tx, MT + (lh - int(ft.size * 1.02)) // 2), title, font=ft, fill=0)
     else:
         tcap = W - 2*M - (eac + px(2) if p.get("eac_pos") == "tr" else 0)
         while tsize > 2.0 and d.textlength(title, font=font(tsize, True)) > tcap:
@@ -183,7 +213,7 @@ def build(key, out=None, quiet=False):
 
     # --- знак ЕАС: официальное изображение (Решение КТС № 711), eac.png ---
     ex = W - M - eac
-    ey = M if p.get("eac_pos") == "tr" else H - M - eac
+    ey = MT if p.get("eac_pos") == "tr" else H - M - eac
     import os
     if os.path.exists("eac.png"):
         src_m = Image.open("eac.png").convert("RGBA")
