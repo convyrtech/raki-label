@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Этикетки «Раки варёные»</title>
+<style>
+  :root { --ink:#111; --bg:#f4f4f2; --line:#d5d5d0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
+
+  .panel { padding:18px 20px; background:#fff; border-bottom:1px solid var(--line); }
+  .panel h1 { margin:0 0 4px; font-size:17px; font-weight:650; }
+  .panel p  { margin:0 0 14px; color:#666; font-size:13px; }
+  .row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+  label { display:block; font-size:12px; color:#666; margin-bottom:4px; }
+  select, input[type=date] { font:14px "Segoe UI", system-ui, sans-serif;
+         padding:7px 9px; border:1px solid #bbb; border-radius:6px; background:#fff; }
+  button { font:14px "Segoe UI", system-ui, sans-serif; padding:8px 18px; border:0;
+           border-radius:6px; background:#111; color:#fff; cursor:pointer; }
+  button:hover { background:#333; }
+  .hint { margin:12px 0 0; font-size:12px; color:#777; max-width:60ch; }
+
+  .stage { padding:26px 20px 40px; display:flex; justify-content:center; }
+  .label { width:58mm; height:80mm; background:#fff; color:#000; position:relative;
+           overflow:hidden; font-family:"Liberation Sans Narrow","Arial Narrow",
+           "Helvetica Neue Condensed", Arial, sans-serif; font-stretch:condensed;
+           padding:3.5mm 1.8mm 1.8mm; box-shadow:0 2px 14px rgba(0,0,0,.18); }
+  .logo { display:block; height:7mm; margin:0 auto .9mm; }
+  /* кегли в мм: строчная ≈0,53 кегля — ключевое 3,9 мм даёт 2,06 мм (норма от 2) */
+  .big   { font-size:3.9mm; line-height:1.16; margin:0 0 .4mm; }
+  .b     { font-weight:700; }
+  .sm    { font-size:1.6mm; line-height:1.16; margin:0 0 .4mm; }
+  .sm12  { font-size:1.92mm; line-height:1.16; margin:0 0 .4mm; }
+  .foot  { position:absolute; left:1.8mm; right:9.8mm; bottom:1.8mm;
+           font-size:1.9mm; line-height:1.25; }
+  .eac   { position:absolute; right:1.8mm; bottom:1.8mm; width:6mm; height:6mm; }
+
+  @media print {
+    @page { size:58mm 80mm; margin:0; }
+    body { background:#fff; }
+    .panel, .stage { padding:0; }
+    .panel { display:none; }
+    .label { box-shadow:none; width:58mm; height:80mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>Этикетки «Раки варёные» — ООО «Ракомат»</h1>
+  <p>Выберите позицию и дату, затем «Печать». В окне печати поставьте масштаб 100% и размер бумаги 58 × 80 мм.</p>
+  <div class="row">
+    <div>
+      <label for="pos">Позиция</label>
+      <select id="pos"></select>
+    </div>
+    <div>
+      <label for="date">Дата изготовления</label>
+      <input type="date" id="date">
+    </div>
+    <div>
+      <label for="copies">Как печатать</label>
+      <button onclick="window.print()">Печать</button>
+    </div>
+  </div>
+  <p class="hint">Массы нетто для фасовок 1,5 кг и 3 кг пока расчётные — после реального
+     взвешивания цифры нужно поправить. Срок годности 5 суток от даты изготовления.</p>
+</div>
+
+<div class="stage">
+  <div class="label" id="label">
+    <img class="logo" src="LOGO_SRC" alt="Ракомат">
+    <p class="big">Раки узкопалые варёные, неразделанные, охлаждённые, в бульоне.</p>
+    <p class="sm12">Состав: вода питьевая, раки, соль пищевая, семена укропа.</p>
+    <p class="sm b">Содержит ракообразных.</p>
+    <p class="sm">Пищевая ценность в 100&nbsp;г: белки 1,5&nbsp;г, жиры 0,1&nbsp;г, углеводы 0,1&nbsp;г, 5&nbsp;ккал (25&nbsp;кДж).</p>
+    <p class="big b" id="netto"></p>
+    <p class="big b" id="raw"></p>
+    <p class="sm b" id="size"></p>
+    <p class="big b">Срок годности: 5&nbsp;суток</p>
+    <p class="big b" id="made"></p>
+    <p class="sm b">Хранить при температуре от +3 до +5&nbsp;°C, в том числе после вскрытия упаковки, не более 12&nbsp;ч после вскрытия.</p>
+    <p class="sm12 b">Продукт готов к употреблению в охлаждённом или разогретом виде.</p>
+    <p class="sm12 b">Перед подачей разогреть бульон и залить им раков. В ведре и в микроволновой печи не разогревать.</p>
+    <div class="foot">
+      Упаковано в день изготовления. Претензии: rakomat@bk.ru, тел.&nbsp;+7&nbsp;966&nbsp;339-96-69<br>
+      Изготовитель: ООО «Ракомат», Россия, Московская обл., д. Осоргино, 202.<br>
+      ТУ 10.20.34-001-96717702-2026
+    </div>
+    <img class="eac" src="EAC_SRC" alt="ЕАС">
+  </div>
+</div>
+
+<script>
+// Позиции по перечню товаров (Приложение №3 к договору 12-65 от 28.10.2026).
+// netto — масса нетто с бульоном, meat — раков варёных; для 1,5 и 3 кг расчёт
+// от замера на 1 кг (выход 93%, бульон пропорционально).
+const POS = [
+  { id:"do40-1",   name:"Раки до 40 г — 1 кг",    raw:"1",   cal:"до 40 г",  netto:2200, meat:930  },
+  { id:"do40-1.5", name:"Раки до 40 г — 1,5 кг",  raw:"1,5", cal:"до 40 г",  netto:3300, meat:1395 },
+  { id:"4070-1",   name:"Раки 40–70 г — 1 кг",    raw:"1",   cal:"40–70 г",  netto:2200, meat:930  },
+  { id:"do40-3",   name:"Раки до 40 г — 3 кг",    raw:"3",   cal:"до 40 г",  netto:6600, meat:2790 },
+];
+
+const $ = id => document.getElementById(id);
+const nb = s => s.replace(/ /g, " ");
+
+POS.forEach(p => $("pos").add(new Option(p.name, p.id)));
+
+function massa(g) {                       // крупные фасовки — в кг, иначе строка не влезает
+  return g >= 3000 ? (g / 1000).toFixed(1).replace(".", ",") + " кг" : g + " г";
+}
+
+function draw() {
+  const p = POS.find(x => x.id === $("pos").value) || POS[0];
+  $("netto").textContent = nb("Масса нетто ") + massa(p.netto) + nb(", раков ") + p.meat + " г";
+  $("raw").textContent   = "Сварено из " + p.raw + " кг живых раков";
+  $("size").textContent  = "Размер раков: " + p.cal;
+  const d = $("date").value ? new Date($("date").value + "T12:00:00") : new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  $("made").textContent  = `Изготовлено ${dd}.${mm}.${d.getFullYear()}`;
+  try { localStorage.setItem("rakomat-pos", p.id); } catch (e) {}
+}
+
+const today = new Date();
+$("date").value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+try {
+  const saved = localStorage.getItem("rakomat-pos");
+  if (saved && POS.some(p => p.id === saved)) $("pos").value = saved;
+} catch (e) {}
+$("pos").addEventListener("change", draw);
+$("date").addEventListener("input", draw);
+draw();
+</script>
+</body>
+</html>

@@ -35,7 +35,7 @@ DATA = dict(
     # --- ключевые сведения (кегль BIG_MM) ---
     netto     = f"Масса нетто 2200{NB}г, раков 930{NB}г",
     netto2    = f"Масса раков: 930{NB}г",
-    raw       = f"Изготовлено из 1{NB}кг живых раков",
+    raw       = f"Сварено из 1{NB}кг живых раков",
     shelf     = f"Срок годности: 5{NB}суток",
     dates     = f"Изготовлено ___.___.___{NB}{NB}Годен до ___.___.___",
     dates_a   = f"Изготовлено 02.09.2026",
@@ -48,7 +48,7 @@ DATA = dict(
                 f"углеводы — 0,1{NB}г. Энергетическая ценность — 5{NB}ккал / 25{NB}кДж.",
     storage   = f"Условия хранения: при температуре от +3 до +5{NB}°C.",
     opened    = f"После вскрытия упаковки хранить при температуре от +3 до +5{NB}°C не более 12{NB}часов.",
-    size      = "Размер раков: ____________",
+    size      = "Размер раков: ____________",   # подставляется set_pack()
     maker     = "Изготовитель: ООО «Ракомат», Россия, Московская обл., "
                 "д. Осоргино, 202.",
     claims    = f"По вопросам качества: rakomat@bk.ru, тел.{NB}8{NB}966{NB}339-96-69",
@@ -69,22 +69,33 @@ PACKS = {
     "1":   (2200,   930),
     "1.5": (3300,  1395),
     "3":   (6600,  2790),
-    "6":   (13200, 5580),
 }
 
-def set_pack(kg):
-    """Подставить в DATA массы и строку о сырье для фасовки kg (строка: '1', '1.5', ...)."""
+# Калибр по перечню товаров (Приложение №3 к договору 12-65 от 28.10.2026):
+# «до 40», «40/70», «70+» — масса одного рака в граммах.
+CALIBRE = {
+    "do40":   f"до 40{NB}г",
+    "4070":   f"40–70{NB}г",
+    "70plus": f"от 70{NB}г",
+}
+
+def set_pack(kg, cal=None):
+    """Подставить в DATA массы, строку о сырье и калибр для фасовки kg ('1', '1.5', ...)."""
     netto, meat = PACKS[kg]
     human = kg.replace(".", ",")
-    DATA["netto"]  = f"Масса нетто {netto}{NB}г, раков {meat}{NB}г"
+    # нетто больших фасовок — в кг, иначе строка не влезает в 58 мм
+    n = f"{netto/1000:.1f}".replace(".", ",") + f"{NB}кг" if netto >= 3000 else f"{netto}{NB}г"
+    DATA["netto"]  = f"Масса нетто {n}, раков {meat}{NB}г"
     DATA["netto2"] = f"Масса раков: {meat}{NB}г"
-    DATA["raw"]    = f"Изготовлено из {human}{NB}кг живых раков"
+    DATA["raw"]    = f"Сварено из {human}{NB}кг живых раков"
+    if cal:
+        DATA["size"] = f"Размер раков: {CALIBRE[cal]}"
 
 BIG  = {"name_full", "netto", "raw", "shelf", "dates", "dates_a", "dates_b", "dates_blank"}
 MID  = set()                        # масса идёт кеглем состава
 BUMP = {"sostav": 1.2, "usage": 1.2, "ready": 1.2}
 BOLD_OFF = {"name_full"}              # эти строки чуть крупнее прочего текста
-BOLD = {"allergen", "netto", "raw", "netto2", "storage", "storage_c", "shelf", "dates", "dates_a",
+BOLD = {"allergen", "netto", "raw", "size", "netto2", "storage", "storage_c", "shelf", "dates", "dates_a",
         "dates_blank", "usage", "ready",
         "dates_b", "opened"}
 
@@ -143,15 +154,21 @@ PRESETS = {
 }
 
 # --- 58x80 под каждую фасовку: 58x80-1.5kg, 58x80-3kg, 58x80-6kg, и blank-версии ---
-for _kg in PACKS:
+# --- пять позиций перечня товаров арендатора (Приложение №3, 12-65 от 28.10.2026) ---
+ASSORT = [("do40", "1"), ("do40", "1.5"), ("4070", "1"), ("do40", "3")]   # 70+ отложен: в перечне без веса и цены
+for _cal, _kg in ASSORT:
+    _body = list(PRESETS["58x80-all"]["body"])
+    _body.insert(_body.index("raw") + 1, "size")
     for _base, _tag in (("58x80-all", ""), ("58x80-blank", "-blank")):
-        PRESETS[f"58x80-{_kg}kg{_tag}"] = dict(PRESETS[_base], pack=_kg)
+        _b = list(PRESETS[_base]["body"]); _b.insert(_b.index("raw") + 1, "size")
+        PRESETS[f"58x80-{_cal}-{_kg}kg{_tag}"] = dict(
+            PRESETS[_base], pack=_kg, calibre=_cal, body=_b)
 
 
 def build(key, out=None, quiet=False):
     p = PRESETS[key]
     if p.get("pack"):
-        set_pack(p["pack"])
+        set_pack(p["pack"], p.get("calibre"))
     W, H, M = px(p["w"]), px(p["h"]), px(p["m"])
     MT = px(p.get("mt", p["m"]))   # верхнее поле: термоголовка подрезает самый край
     img = Image.new("L", (W, H), 255)
